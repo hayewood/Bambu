@@ -1,5 +1,5 @@
 <template>
- <div class="chat-app" style="border-right: 1px solid #424242">
+ <div style="border-right: 1px solid #424242;">
     <div class="col">     
         <div class="row-content center z-depth-3" style="border-bottom: 1px solid #424242">
              <span class="flow-text white-text">{{ title }}</span>
@@ -11,8 +11,8 @@
         </div>
     </div>
 
-    <!-- if a session is joined -->
     <div class="col blue-grey darken-4 z-depth-1">
+            <!-- if a session is joined -->
         <div class="row chat-box" style="margin-bottom:0px;margin-left:5px" v-if="joined">
             <div class="input-field col s4 left box">
                 <input type="text" v-model="newMsg" placeholder="Say something here" @keyup.enter="send">
@@ -61,7 +61,6 @@ export default {
         username: null, // Our username
         joined: false, // True if email and username have been filled in
         autoReconnectInterval: 100,
-        debug: true
     }
   },
 
@@ -124,10 +123,10 @@ export default {
 
         open: function() {
             var self = this;
-            if(!this.debug)
-                this.ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + "calculator-example.herokuapp.com" + "/ws");
-            else
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1")
                 this.ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + "localhost:8000" + "/ws");
+            else
+                this.ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + "calculator-example.herokuapp.com" + "/ws");
 
             this.ws.addEventListener('message', function(event) {
                 var msg = JSON.parse(event.data);
@@ -188,6 +187,10 @@ input, select, textarea{
 .row.chat-box {
     margin-right: 0px;
     margin-left: 0px;
+}
+
+.row.col {
+    padding: 0px;
 }
 
 
