@@ -3,38 +3,67 @@
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <header>
       <nav>
-        <Navbar></Navbar>
+        <Navbar :signIn="signed_in" :email="email" :profilePic="profilePic" :username="username" v-on:signed_in="signedInCallback($event)" v-on:login_info="loginInfoCallback($event)"></Navbar>
       </nav>
     </header>
     <main class="row s12 blue-grey darken-4">
-      <Chat class="col s4" title="Channel 1"></Chat>
+      <draggable handle=".handle">
+        <Chat :signIn="signed_in" :email="email" :profilePic="profilePic" :username="username" v-on:signed_in="signedInCallback($event)" v-on:login_info="loginInfoCallback($event)" class="col s4 blue-grey darken-4" title="Channel 1"></Chat>
+        <Chat :signIn="signed_in" :email="email" :profilePic="profilePic" :username="username" v-on:signed_in="signedInCallback($event)" v-on:login_info="loginInfoCallback($event)" class="col s4 blue-grey darken-4" title="Channel 2"></Chat>
+        <Chat :signIn="signed_in" :email="email" :profilePic="profilePic" :username="username" v-on:signed_in="signedInCallback($event)" v-on:login_info="loginInfoCallback($event)" class="col s4 blue-grey darken-4" title="Channel 3"></Chat>
+      </draggable>
+
     </main>
     <Footer></Footer>
   </div>
 </template>
 
-<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
   import 'materialize-css'
+  import DataStore from './DataStore'
+  import Sortable from 'sortablejs';
+  import draggable from 'vuedraggable'
   import Chat from './components/Chat.vue'
   import Footer from './components/Footer.vue'
   import Navbar from './components/Navbar.vue'
   import Vue from 'vue';
-  import VeeValidate from 'vee-validate';
-  import axios from 'axios';
-
-
-  Vue.use(VeeValidate);
+  
+  Vue.use(draggable)
 
   export default {
-    name: 'app',
-    components: {
-      Chat,
-      Footer,
-      Navbar
-    }
+      name: 'app',
+      components: {
+        Chat,
+        draggable,
+        Footer,
+        Navbar
+      },
+        data:function() {
+          return {
+            isHoverDragable: false,
+            title: null,
+            signed_in: false,
+            username: null,
+            profilePic: null,
+            email: null
+
+          }
+      },
+      methods: {
+        signedInCallback: function() {
+          this.signed_in = true;
+        },
+
+        loginInfoCallback: function(event) {
+            this.email = event[0];
+            this.username = event[1];
+            this.profilePic = event[2];
+
+        }
+      }
   }
 </script>
 

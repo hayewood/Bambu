@@ -1,19 +1,20 @@
 <template>
- <div style="border-right: 1px solid #424242;">
+ <div id="draggable-chat" style="border: 1px solid #424242;">
     <div class="col">     
-        <div class="row-content center z-depth-3" style="border-bottom: 1px solid #424242">
-             <span class="flow-text white-text">{{ title }}</span>
+        <div class="row-content center z-depth-1" style="border-bottom: 1px solid #424242">
+             <span class="flow-text white-text center">{{ title }}</span>
+            <i id="dragable-button" class="material-icons right lime-text lighten-2 handle">drag_indicator</i>
         </div>
 
-        <div class="row" style="position: relative; margin-bottom: 0px;">
+        <div id="main-chat" class="row" style="position: relative; margin-bottom: 0px;">
             <div id="chat-messages" class="card-content left" style="margin: 10px;" v-html="chatContent">
             </div>
         </div>
     </div>
 
-    <div class="col blue-grey darken-4 z-depth-1">
+    <div id="input-box" class="col blue-grey darken-4 z-depth-1">
             <!-- if a session is joined -->
-        <div class="row chat-box" style="margin-bottom:0px;margin-left:5px" v-if="joined">
+        <div class="row chat-box" style="margin-bottom:0px;margin-left:5px" v-if="signIn">
             <div class="input-field col s4 left box">
                 <input type="text" v-model="newMsg" placeholder="Say something here" @keyup.enter="send">
             </div>
@@ -26,12 +27,12 @@
         </div>
 
         <!-- if a session is not joined -->
-        <div class="row chat-box" style="margin-bottom:0px; margin-left:5px" v-if="!joined">
+        <div class="row chat-box" style="margin-bottom:0px; margin-left:5px" v-if="!signIn">
             <div class="input-field col s4 box">
-                <input type="email" v-model.trim="email" placeholder="Email">
+                <input type="email" v-model.trim="mEmail" placeholder="Email">
             </div>
             <div class="input-field col s4 box" style="margin-left:5px">
-                <input type="text" v-model.trim="username" placeholder="Username">
+                <input type="text" v-model.trim="mUsername" placeholder="Username">
             </div>
           <a class="btn-floating lime lighten-2" style="margin: 10px; margin-top:20px" @click="join">
                 <i class="material-icons" style="line-height: 40px; color: black;">done</i>
@@ -45,52 +46,90 @@
 <script>
 import * as emojione from "emojione";
 import $ from "jquery";
+import Vue from 'vue';
+
 export default {
   name: 'Chat',
 
   props: {
-  title: String
+    title: String,
+    username: String,
+    profilePic: String,
+    email: String,
+    signIn: Boolean
   },
 
+    watch: {
+        signIn: function () {
+            this.open();
+        },
+    },
   data: function() {
     return {
         ws: null, // Our websocket
         newMsg: '', // Holds new messages to be sent to the server
         chatContent: '', // A running list of chat messages displayed on the screen
-        email: null, // Email address used for grabbing an avatar
-        username: null, // Our username
-        joined: false, // True if email and username have been filled in
+        mEmail: null, // Email address used for grabbing an avatar
+        mUsername: null, // Our username
+        mProfilePic: null,
+        joined: null, // True if email and username have been filled in
         autoReconnectInterval: 100,
     }
   },
 
+  created: function(){
+    var self = this;
+    // Created another Vue instance
+    window.Event = new Vue();
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Changing the cursor for the chat 
+        var drag_chat = document.querySelectorAll("[id='dragable-button']");
+        for(var i = 0; i < drag_chat.length; i++) {
+            drag_chat[i].style.cursor='all-scroll';
+        }
+
+        // Changing the cursor for the input box
+        var input_box = document.querySelectorAll("[id='input-box']");
+        for(var i = 0; i < input_box.length; i++) 
+            input_box[i].style.cursor='default';
+
+        
+    });
+  },
+
     methods: {
         send: function () {
-            if (this.newMsg != '') {
+           if (this.newMsg != '') {
                 this.ws.send(
                     JSON.stringify({
                         email: this.email,
+                        picture: this.profilePic,
                         username: this.username,
                         message: $('<p>').html(this.newMsg).text() // Strip out html
                     }
                 ));
                 this.newMsg = ''; // Reset newMsg
-            }
+           }
         },
 
         join: function () {
-            if (!this.email) {
+            if (!this.mEmail) {
                 Materialize.toast('You must enter an email', 2000);
                 return
             }
-            if (!this.username) {
+            if (!this.mUsername) {
                 Materialize.toast('You must choose a username', 2000);
                 return
             }
-            this.email = $('<p>').html(this.email).text();
-            this.username = $('<p>').html(this.username).text();
+
+            this.mMail = $('<p>').html(this.mEmail).text();
+            this.mProfilePic = $('<p>').html(this.mProfilePic).text();
+            this.mUsername = $('<p>').html(this.mUsername).text();
             this.joined = true;
-            this.open();
+            this.$emit('signed_in',this.joined);
+            this.$emit('login_info',[this.mEmail,this.mUsername, this.mProfilePic]);
+            //this.open();
         },
 
         profileURL: function() {
@@ -130,14 +169,27 @@ export default {
 
             this.ws.addEventListener('message', function(event) {
                 var msg = JSON.parse(event.data);
-                self.chatContent += '<div class="chip lime lighten-2">'
-                        + '<i class="material-icons left black-text">account_circle</i>'
+
+                if(msg.picture != "") {
+                    self.chatContent += '<div class="chip lime lighten-2">'
+                            + '<img src="' + msg.picture + '">' // Avatar
                             + msg.username
-                        + '</div>'
-                    + emojione.toImage(msg.message) + '<br/>'; // Parse emojis
-                var element = document.getElementById('chat-messages');
-                element.style.color = "#FFFFFF";
-                element.scrollTop = element.scrollHeight; // Auto scroll to the bottom
+                            + '</div>'
+                        + emojione.toImage(msg.message) + '<br/>'; // Parse emojis
+                    var element = document.getElementById('chat-messages');
+                    element.style.color = "#FFFFFF";
+                    element.scrollTop = element.scrollHeight; // Auto scroll to the bottom
+                }
+                else {
+                    self.chatContent += '<div class="chip lime lighten-2">'
+                            + '<i class="material-icons left black-text">account_circle</i>'
+                                + msg.username
+                            + '</div>'
+                        + emojione.toImage(msg.message) + '<br/>'; // Parse emojis
+                    var element = document.getElementById('chat-messages');
+                    element.style.color = "#FFFFFF";
+                    element.scrollTop = element.scrollHeight; // Auto scroll to the bottom
+                }
             });
 
             this.ws.addEventListener('close', (event) => {
@@ -148,8 +200,7 @@ export default {
         close: function() {
             this.ws.close(1000);
             this.joined = false;
-        },
-        
+        }
     }
 }
 </script>
@@ -184,6 +235,13 @@ input, select, textarea{
     line-height: inherit;
 }
 
+.material-icons.right {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: inherit;
+}
 .row.chat-box {
     margin-right: 0px;
     margin-left: 0px;
@@ -192,7 +250,6 @@ input, select, textarea{
 .row.col {
     padding: 0px;
 }
-
 
 .chat-app {
     flex: 0 1 auto;

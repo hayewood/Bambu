@@ -1,5 +1,14 @@
 body {
     display: flex;
     min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
     flex-direction: column;
 }
+
+html {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+

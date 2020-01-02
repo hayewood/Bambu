@@ -15,7 +15,7 @@
             <div class="footer-copyright">
                 <div class="container">
                 © 2019 Copyright 
-                <a class="grey-text text-lighten-4 right" href="github.com/ImVerbatim">More Links</a>
+                <a class="grey-text text-lighten-4 right" href="!#">More Links</a>
                 </div>
             </div>
         </footer>
