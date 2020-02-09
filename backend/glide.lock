@@ -1,14 +1,14 @@
 hash: b29d81d3d9f60bd588bc207f144c0ced0fa3de5355a9beb3b70e038c43b3ada1
-updated: 2019-12-26T16:48:38.709954-06:00
+updated: 2020-01-11T14:12:33.226813421Z
 imports:
 - name: github.com/gorilla/websocket
   version: c3e18be99d19e6b3e8f1559eea2c161a665c4b6b
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: f55edac94c9bbba5d6182a4be46d86a2c9b5b50e
 - name: github.com/sirupsen/logrus
-  version: 839c75faf7f98a33d445d181f3018b5c3409a45e
+  version: 67a7fdcf741f4d5cee82cb9800994ccfd4393ad0
 - name: golang.org/x/sys
-  version: af0d71d358abe0ba3594483a5d519f429dbae3e9
+  version: 548cf772de5052aa878ccb47cdeb7d262b75c8ec
   subpackages:
   - unix
 testImports: []
